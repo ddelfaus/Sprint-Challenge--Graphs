@@ -37,10 +37,10 @@ world = World()
 
 # You may uncomment the smaller graphs for development and testing purposes.
 # map_file = "maps/test_line.txt"
-map_file = "maps/test_cross.txt"
+# map_file = "maps/test_cross.txt"
 # map_file = "maps/test_loop.txt"
 # map_file = "maps/test_loop_fork.txt"
-# map_file = "maps/main_maze.txt"
+map_file = "maps/main_maze.txt"
 
 # Loads the map into a dictionary
 room_graph=literal_eval(open(map_file, "r").read())
@@ -90,7 +90,7 @@ def next_room_exits(next_id, next_direction):
     
     opposites = { 'n': 's', 's' : 'n', 'e': 'w', 'w': 'e'}
     next_array = []
-    previous_arrray = []
+    previous_array = []
 
     for direction in room_graph[next_id][1].keys():
 
@@ -133,7 +133,7 @@ def maze_pathfinding(start_room):
     #getting start directions
     visited = { start_room : unexplored_rooms(start_room)}
     room_choice_len = len(room_graph[start_room][1].keys())
-
+    opposites = { 'n': 's', 's' : 'n', 'e': 'w', 'w': 'e'}
     current_room = start_room
     #DFS type loop
     while (len(visited_rooms) < len(world.rooms)):
@@ -163,11 +163,70 @@ def maze_pathfinding(start_room):
             next_room = room_graph[current_room][1][new_direction]
             # print(next_room)  
 
+            check_next_room = next_room_exits(next_room, new_direction)
+
+            traversal_path.append(new_direction)
+
+            if check_next_room == True:
+
+                print(new_direction)
+
+                visited[current_room][new_direction] = next_room
+
+                if next_room not in visited:
+                    visited[next_room] = unexplored_rooms(next_room)
+                    print(visited[next_room])
+                    visited[next_room][opposites[new_direction]] = current_room
+
+                else:
+                    visited[next_room][opposites[new_direction]] = current_room
+
+            if check_next_room == False:
+                if next_room not in visited:
+                    
+                    visited[current_room][new_direction] = next_room
+                    visited[next_room] = unexplored_rooms(next_room)
+
+
+            current_room = next_room
+
+        #BFS
+        while len(visited_rooms) < len(world.rooms) and '?' not in visited[current_room].values():
+
+            queue = Queue()
+            room_directions = visited[current_room]
+
+            explored = set()
+
+            for key, value in room_directions.items():
+                queue.enqueue([value, [key]])
+
+            while queue.size() > 0:
+
+                visit = queue.dequeue()
+                v = visit[0]
+
+                if v not in explored:
+
+                    if '?' in visited[v].values():
+
+                        current_room = v
+                        traversal_path.append[v]
+                        break
+            
+            explored.add(v)
+
+            room_directions = visited[v]
+            for key, value in room_directions.items():
+                path_copy = visit[1].copy()
+                path_copy.append(key)
+                queue.enqueue([value, path_copy])
+
+        return traversal_path
+            
 
 
 
-    
-      
 
 def random_direction():
     #get room exits
@@ -206,28 +265,6 @@ def random_direction():
 
 
 #
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 # TRAVERSAL TEST
